@@ -162,4 +162,28 @@
     //border-image: linear-gradient(to right bottom, #E27357, #F79B5E) ;
     //border-radius: inherit;
   }
+
+  .accordion-item {
+    border: none !important;
+    border-bottom: 1px solid rgba(#100F0F, 10%) !important;
+
+    .accordion-body {
+      padding: 0px 0px 20px 0px;
+      font-weight: 100;
+      color: rgba(#100F0F, 80%);
+      font-size: 14px;;
+    }
+
+    button {
+      padding: 0;
+    }
+
+    h2 {
+      padding: 20px 0;
+    }
+
+    &:last-child {
+      border-bottom: none !important;
+    }
+  }
 }

@@ -47,7 +47,7 @@ const router = createRouter({
       path: '/pay/success',
       name: 'pay-success',
       meta: { title: 'Payment Success' },
-      component: () => import('@/views/BookView.vue')
+      component: () => import('@/views/Pay/Success.vue')
     },
   ]
 })

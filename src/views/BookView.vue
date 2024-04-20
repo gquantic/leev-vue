@@ -7,6 +7,7 @@ import TextFloatInput from "@/components/form/TextFloatInput.vue";
 import axios from "axios";
 import CheckoutProgress from "@/components/checkout/CheckoutProgress.vue";
 import LoadBar from '@/components/LoadBar.vue';
+import router from '@/router';
 
 let apartment = ref({});
 let loaded = ref(false);
@@ -70,6 +71,31 @@ onMounted(function () {
 
 function toPay() {
   $('#payModal').modal('show');
+}
+
+function initPay() {
+  $('#payModal').modal('hide');
+
+  // Router push to pay-success with get params
+  router.push({
+    name: 'pay-success',
+    query: {
+      apartment: urlParams.get('apartment'),
+      start: urlParams.get('start'),
+      end: urlParams.get('end'),
+      adt: urlParams.get('adt'),
+      chd: urlParams.get('chd'),
+      bb: urlParams.get('bb'),
+      early_check_in: early_check_in.value.toString(),
+      late_check_out: late_check_out.value.toString(),
+      policy: policy.value.toString(),
+      receiveOffers: receiveOffers.value.toString(),
+      firstName: firstName.value,
+      lastName: lastName.value,
+      phone: phone.value,
+      email: email.value
+    }
+  });
 }
 </script>
 
@@ -208,6 +234,16 @@ function toPay() {
                       </div>
                     </div>
                   </div>
+                  <div class="row p-4">
+                    <span class="text-muted fw-lighter"><span class="fw-regular">Payment:</span> Prepayment required:
+                      100%: Credit card</span>
+                    <br><br>
+                    <span class="text-muted fw-lighter"><span class="fw-regular">Privacy:</span> We
+                      only use your
+                      personal data for topics
+                      related
+                      to your reservation. Read privacy policy. </span>
+                  </div>
                 </div>
                 <div class="col-lg-4" v-else>
                   <div class="card border-0 overflow-hidden loading-effect" style="height: 300px;">
@@ -282,9 +318,8 @@ function toPay() {
                 </div>
               </div>
 
-              <RouterLink to="/success">
-                <button type="button" class="btn btn-primary rounded-1 w-100 mt-4">Pay for reservation</button>
-              </RouterLink>
+              <button type="button" class="btn btn-primary rounded-1 w-100 mt-4" @click="initPay">Pay for
+                reservation</button>
               <div class="text-center mt-3">
                 <a href="javascript:void(0);" style="color: #f48a5d;border-bottom: 1px dashed;"
                   onclick="$('#payModal').modal('hide');">Back to shop</a>
