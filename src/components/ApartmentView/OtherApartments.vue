@@ -2,13 +2,16 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+import type { Ref } from 'vue';
+import type { Apartment } from "@/interfaces/Apartment";
+
 const API_URL = import.meta.env.VITE_API_URL
 
 import { Swiper, SwiperSlide } from 'swiper/vue';
-import { getApartments } from "@/api/getApartments.ts";
+import { getApartments } from "@/api/getApartments";
 
-let apartments = ref([])
-let loaded: boolean = ref(false)
+let apartments: Ref<Apartment[]> = ref([] as Apartment[])
+let loaded: Ref<Boolean> = ref(false)
 
 onMounted(async () => {
   try {
@@ -30,11 +33,7 @@ onMounted(async () => {
     <div class="container">
       <div class="row">
         <div class="col-12" v-if="loaded === true">
-          <swiper
-              :slides-per-view="3"
-              :loop="true"
-              :space-between='20'
-          >
+          <swiper :slides-per-view="3" :loop="true" :space-between='20'>
             <swiper-slide v-for="(item, index) in apartments" :index="index">
               <RouterLink class="list-apartments__item d-block position-relative" :to="'/apartments/' + item.id">
                 <picture>
@@ -45,7 +44,8 @@ onMounted(async () => {
                   <div class="badges__item"><span>{{ item.objectTypes[0]?.name.En }}</span></div>
                 </div>
                 <div class="content-card">
-                  <div class="content__card-descr content-card__rooms d-flex align-items-center gap-2"><span>{{ item.rooms }} rooms</span></div>
+                  <div class="content__card-descr content-card__rooms d-flex align-items-center gap-2"><span>{{
+                    item.rooms }} rooms</span></div>
                   <h4 class="title-card">{{ item.name.En }}</h4>
                   <div class="content__card-descr content-card__adress"><span>{{ item.address }}</span></div>
                   <div class="price price-mobile">

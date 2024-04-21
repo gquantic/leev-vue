@@ -1,4 +1,8 @@
 <template>
+
+</template>
+
+<!-- <template>
     <div class="progress-container">
         <svg class="progress-circle" width="120" height="120">
             <circle class="progress-circle-background" cx="60" cy="60" r="50"></circle>
@@ -68,4 +72,4 @@ watch(() => props.startLoading, (newValue) => {
     font-size: 20px;
     fill: #333;
 }
-</style>
+</style> -->

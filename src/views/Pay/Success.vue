@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, Ref, computed, watchEffect, onMounted } from 'vue';
+import { ref, computed, watchEffect, onMounted } from 'vue';
+import type { Ref } from 'vue'; // Use type-only import for Ref
+import type { Apartment } from '@/interfaces/Apartment';
 
 import Header from "@/components/Header/Header.vue";
 import HeaderMobile from "@/components/Header/HeaderMobile.vue";
@@ -9,7 +11,7 @@ import CheckoutProgress from "@/components/checkout/CheckoutProgress.vue";
 import LoadBar from '@/components/LoadBar.vue';
 import ImportantInformation from '@/components/pay/ImportantInformation.vue';
 
-let apartment = ref({});
+let apartment: Ref<Apartment> = ref({} as Apartment);
 let loaded = ref(false);
 
 // Получение параметров запроса из текущего URL
@@ -18,17 +20,24 @@ const urlParams = new URLSearchParams(queryString);
 
 const api = import.meta.env.VITE_API_URL;
 
-let startDate = new Date(urlParams.get('start'));
-let endDate = new Date(urlParams.get('end'));
+// Parse start and end dates
+let startDate = new Date(urlParams.get('start') || ''); // Provide a default value if null
 
-let daysDifference: Ref<number> = ref(Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)));
+let endDate: Date | null = null;
+const endParam = urlParams.get('end');
+if (endParam) {
+    endDate = new Date(endParam);
+}
+
+// Calculate days difference if endDate is not null
+let daysDifference: Ref<number> = ref(endDate ? Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) : 0);
 
 let check: Ref<string> = ref('early');
 
 // Residents
-let adt: Ref<Number> = ref(Number(urlParams.get('adt')));
-let chd: Ref<Number> = ref(Number(urlParams.get('chd')));
-let bb: Ref<Number> = ref(Number(urlParams.get('bb')));
+let adt = ref(Number(urlParams.get('adt')));
+let chd = ref(Number(urlParams.get('chd')));
+let bb = ref(Number(urlParams.get('bb')));
 
 let early_check_in: Ref<Boolean> = ref(false);
 let late_check_out: Ref<Boolean> = ref(false);
@@ -72,17 +81,19 @@ const computedValue = computed(() => {
 onMounted(function () {
     loaded.value = true;
 });
+
+
 </script>
 
 <template>
     <Header />
     <HeaderMobile />
-    <div class="page page-book mb-5">
+    <div class="page page-book mb-5" v-if="apartment && Object.keys(apartment).length > 0">
         <div class="apartment">
             <div class="container">
                 <div class="row mt-5">
                     <div class="col-12 mt-3">
-                        <form action="" @submit.prevent="toPay">
+                        <div>
                             <div class="row">
                                 <div class="col-lg-8">
                                     <div class="row">
@@ -166,7 +177,19 @@ onMounted(function () {
                                             <div class="checkout-preview__top-hold"
                                                 :style="'height: 238px;background: url(' + apartment?.cover + ') center center / cover;'">
                                                 <h2>{{ apartment?.name.En }}</h2>
-                                                <p>{{ apartment.address }}</p>
+                                                <p>{{ apartment?.address }}</p>
+                                            </div>
+                                            <div class="col-lg-4"
+                                                v-if="apartment && loaded && Object.keys(apartment).length > 0">
+                                                <div class="card border-0 overflow-hidden">
+                                                    <div class="card-body p-0 checkout-preview">
+                                                        <div class="checkout-preview__top-hold"
+                                                            :style="'height: 238px;background: url(' + apartment?.cover + ') center center / cover;'">
+                                                            <h2>{{ apartment?.name.En }}</h2>
+                                                            <p>{{ apartment?.address }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="row mt-4 p-4 pt-2">
                                                 <p class="fs-5 mb-2">Have questions?</p>
@@ -193,7 +216,7 @@ onMounted(function () {
                                     </div>
                                 </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>

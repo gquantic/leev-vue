@@ -1,46 +1,49 @@
 <script setup lang="ts">
-import {defineProps, ref, watch, computed, onMounted } from 'vue'
+import { defineProps, ref, watch, computed, onMounted, type Ref } from 'vue'
 import Dropdown from "v-dropdown";
 import VueDatePicker from '@vuepic/vue-datepicker';
 import '@vuepic/vue-datepicker/dist/main.css';
 import axios from "axios";
-import {useRouter} from "vue-router";
+import { useRouter } from "vue-router";
+
+import type { Apartment } from '@/interfaces/Apartment';
+import type { Reservation } from '@/interfaces/Reservation';
 
 let props = defineProps({
   apartment: {
-    type: Object,
+    type: Object as () => Apartment,
     required: true
   },
-})
+});
 
-let adt = ref(1)
-let chd = ref(0)
-let bb = ref(0)
+let adt = ref<number>(1);
+let chd = ref<number>(0);
+let bb = ref<number>(0);
 
-let bookDate = ref<Date | null>(null);
+let bookDate = ref<Date[]>([]);
 
 const datePickerConfig = {
   range: true
-}
+};
 
 // single ref
 watch(adt, (newVal, oldVal) => {
   if (newVal > props.apartment.guests.Adult || newVal < 0) {
-    adt.value = oldVal
+    adt.value = oldVal;
   }
-})
+});
 
 watch(chd, (newVal, oldVal) => {
   if (newVal > props.apartment.guests.Children || newVal < 0) {
-    chd.value = oldVal
+    chd.value = oldVal;
   }
-})
+});
 
 watch(bb, (newVal, oldVal) => {
   if (newVal > props.apartment.guests.baby || newVal < 0) {
-    bb.value = oldVal
+    bb.value = oldVal;
   }
-})
+});
 
 const tomorrow = computed(() => {
   const today = new Date();
@@ -51,20 +54,18 @@ const tomorrow = computed(() => {
 
 const api = import.meta.env.VITE_API_URL;
 
-let reservations = {};
-
 let busyDates = ref<Date[]>([]);
 
 // Функция для получения резерваций для определенного апартамента
 const fetchReservations = async () => {
   try {
-    const response = await axios.get(api + 'reservations/' + props.apartment.id);
-    const reservations = response.data;
+    const response = await axios.get(`${api}reservations/${props.apartment.id}`);
+    const reservations: Reservation[] = response.data;
 
-    console.log(reservations)
+    console.log(reservations);
     // Обновление массива занятых дат на основе полученных резерваций
-    const updatedBusyDates = [];
-    reservations.forEach(reservation => {
+    const updatedBusyDates: Date[] = reservations.map(reservation => new Date(reservation.date));
+    reservations.forEach((reservation: Reservation) => {
       const fromDate = new Date(reservation.from_date);
       const toDate = new Date(reservation.to_date);
       for (let currentDate = fromDate; currentDate <= toDate; currentDate.setDate(currentDate.getDate() + 1)) {
@@ -83,13 +84,13 @@ const disabledDates = computed(() => {
   return busyDates.value.map(date => date.toISOString().split('T')[0]);
 });
 
-const beforeSelectHandler = (value): boolean => {
-  const selectedDates = bookDate.value;
-  if (selectedDates && selectedDates[0] && selectedDates[1]) {
-    const startDate = selectedDates[0];
-    const endDate = selectedDates[1];
+const beforeSelectHandler = (value: Date[]): boolean => {
+  const selectedDates = value;
+  if (selectedDates && selectedDates.length === 2) {
+    const startDate: Date = selectedDates[0];
+    const endDate: Date = selectedDates[1];
     const daysBetween = (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
-    const selectedRange = [];
+    const selectedRange: string[] = [];
     for (let i = 0; i <= daysBetween; i++) {
       const newDate = new Date(startDate);
       newDate.setDate(startDate.getDate() + i);
@@ -98,25 +99,28 @@ const beforeSelectHandler = (value): boolean => {
     for (const date of selectedRange) {
       if (disabledDates.value.includes(date)) {
         alert('There are busy days in the selected period.');
-        bookDate.value = null;
-        return false; // Предотвращаем выбор периода, если хотя бы одна из дат занята
+        return false;
       }
     }
   }
   return true;
 };
 
-const router = useRouter()
+const router = useRouter();
 
 function bookNow() {
-  if (bookDate.value === null) {
-    return alert('Please select date range.')
+  if (!bookDate.value || bookDate.value.length < 2) {
+    return alert('Please select a date range.');
   }
 
-  let startDate = new Date(bookDate.value[0]).toISOString().split('T')[0];
-  let endDate = new Date(bookDate.value[1]).toISOString().split('T')[0];
+  const startDate = new Date(bookDate.value[0]).toISOString().split('T')[0];
+  const endDate = bookDate.value.length > 1 ? new Date(bookDate.value[1]).toISOString().split('T')[0] : null;
 
-  router.push(`/book/?start=${startDate}&end=${endDate}&adt=${adt.value}&chd=${chd.value}&bb=${bb.value}&apartment=${props.apartment.id}`)
+  if (!endDate) {
+    return alert('Please select an end date.');
+  }
+
+  router.push(`/book/?start=${startDate}&end=${endDate}&adt=${adt.value}&chd=${chd.value}&bb=${bb.value}&apartment=${props.apartment.id}`);
 }
 </script>
 
@@ -128,25 +132,9 @@ function bookNow() {
           <p class="name m-0">Arrival and departure</p>
           <div class="react-datepicker-wrapper">
             <div class="react-datepicker__input-container">
-<!--              <input placeholder="Dates" class="w-100" type="text" value="" />-->
-              <VueDatePicker
-                  placeholder="Dates"
-                  class="w-100"
-                  :range="true"
-                  :enable-time-picker="false"
-                  :multi-calendars="{ solo: true }"
-                  :min-date="tomorrow"
-                  v-model="bookDate"
-                  :disabled-dates="disabledDates"
-                  @internal-model-change="beforeSelectHandler"
-              />
-
-<!--              <Dropdown :align="'left'" id="select-date">-->
-<!--                <template #trigger="{visible}">-->
-<!--                  -->
-<!--                </template>-->
-<!--                -->
-<!--              </Dropdown>-->
+              <VueDatePicker placeholder="Dates" class="w-100" :range="true" :enable-time-picker="false"
+                :multi-calendars="{ solo: true }" :min-date="tomorrow" v-model="bookDate"
+                :disabled-dates="disabledDates" @internal-model-change="beforeSelectHandler" />
             </div>
           </div>
         </div>
@@ -162,28 +150,38 @@ function bookNow() {
                 <div class="filter-line" style="width:300px;height: fit-content;">
                   <div class=" selection-persons d-flex flex-column" style="width:100%;height: fit-content;">
                     <div class="p-2 d-flex justify-content-between align-items-center w-100">
-                      <div class="d-flex flex-column align-items-start gap-1"><span class="name">Adults</span><span class="sub-name">from 15 years</span></div>
+                      <div class="d-flex flex-column align-items-start gap-1"><span class="name">Adults</span><span
+                          class="sub-name">from 15 years</span></div>
                       <div class="quantity d-flex align-items-center justify-content-between">
-                        <button type="button" @click="adt--" class="quantity__action input-number-decrement-cart">-</button>
+                        <button type="button" @click="adt--"
+                          class="quantity__action input-number-decrement-cart">-</button>
                         <span class="input-number">{{ adt }}</span>
-                        <button type="button" @click="adt++"  class="quantity__action input-number-increment-cart">+</button>
+                        <button type="button" @click="adt++"
+                          class="quantity__action input-number-increment-cart">+</button>
                       </div>
                     </div>
                     <div class="p-2 d-flex justify-content-between align-items-center w-100">
-                      <div class="d-flex flex-column align-items-start gap-1"><span class="name">Children</span><span class="sub-name">from 2 to 12 years</span></div>
+                      <div class="d-flex flex-column align-items-start gap-1"><span class="name">Children</span><span
+                          class="sub-name">from 2 to 12 years</span></div>
                       <div class="quantity d-flex align-items-center justify-content-between">
-                        <button type="button" @click="chd--" class="quantity__action input-number-decrement-cart">-</button>
+                        <button type="button" @click="chd--"
+                          class="quantity__action input-number-decrement-cart">-</button>
                         <span class="input-number">{{ chd }}</span>
-                        <button type="button" @click="chd++" class="quantity__action input-number-increment-cart">+</button>
+                        <button type="button" @click="chd++"
+                          class="quantity__action input-number-increment-cart">+</button>
                       </div>
                     </div>
                     <div class="p-2 d-flex justify-content-between align-items-center w-100">
-                      <div class="d-flex flex-column align-items-start gap-1"><span class="name">Baby</span><span class="sub-name">up to 2 years</span></div>
+                      <div class="d-flex flex-column align-items-start gap-1"><span class="name">Baby</span><span
+                          class="sub-name">up to
+                          2 years</span></div>
                       <div class="quantity d-flex align-items-center justify-content-between">
                         <div class="quantity d-flex align-items-center justify-content-between">
-                          <button type="button" @click="bb--" class="quantity__action input-number-decrement-cart">-</button>
+                          <button type="button" @click="bb--"
+                            class="quantity__action input-number-decrement-cart">-</button>
                           <span class="input-number">{{ bb }}</span>
-                          <button type="button" @click="bb++" class="quantity__action input-number-increment-cart">+</button>
+                          <button type="button" @click="bb++"
+                            class="quantity__action input-number-increment-cart">+</button>
                         </div>
                       </div>
                     </div>
@@ -193,7 +191,8 @@ function bookNow() {
             </div>
           </div>
         </div>
-        <button class="search-button" @click="bookNow"><span class="text d-none d-lg-block">Book now</span><i class="icon icon-search d-block d-lg-none"></i></button>
+        <button class="search-button" @click="bookNow"><span class="text d-none d-lg-block">Book now</span><i
+            class="icon icon-search d-block d-lg-none"></i></button>
       </div>
     </div>
   </section>
@@ -203,6 +202,7 @@ function bookNow() {
 .filter-line .selection-persons {
   position: inherit;
 }
+
 .v-dropdown-container {
   position: fixed !important;
   transform: translateY(-40px) translateX(-24px);
@@ -217,14 +217,17 @@ function bookNow() {
   display: none;
 }
 
-.dp__action_buttons .dp__action_select, .dp__action_buttons .dp__action_select:hover {
+.dp__action_buttons .dp__action_select,
+.dp__action_buttons .dp__action_select:hover {
   background: linear-gradient(77deg, rgba(226, 115, 87, 0.7) 0%, rgba(247, 155, 94, 0.7) 100%),
-  #fd6f1f;
+    #fd6f1f;
 }
 
-.dp__main, .dp__main * {
+.dp__main,
+.dp__main * {
   font-family: 'GT Walsheim Pro', sans-serif !important;
 }
+
 .dp__icon {
   display: none;
 }

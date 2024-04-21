@@ -1,7 +1,7 @@
-import type { TApartment } from '@/types/TApartment.ts';
+import type { Apartment } from '@/interfaces/Apartment';
 
 interface Response {
-  data: TApartment;
+  data: Apartment[];
 }
 
 const BASE_URL = `${import.meta.env.VITE_API_URL}apartments`;

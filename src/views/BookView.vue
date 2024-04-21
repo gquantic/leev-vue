@@ -1,16 +1,24 @@
 <script setup lang="ts">
-import { ref, Ref, computed, watchEffect, onMounted } from 'vue';
+import { ref, computed, watchEffect, onMounted } from 'vue';
+
+import type { Ref } from 'vue';
 
 import Header from "@/components/Header/Header.vue";
 import HeaderMobile from "@/components/Header/HeaderMobile.vue";
 import TextFloatInput from "@/components/form/TextFloatInput.vue";
 import axios from "axios";
 import CheckoutProgress from "@/components/checkout/CheckoutProgress.vue";
-import LoadBar from '@/components/LoadBar.vue';
 import router from '@/router';
+import type { Apartment } from '@/interfaces/Apartment';
+import jQuery from 'jquery';
+import 'bootstrap';
 
-let apartment = ref({});
+let apartment: Ref<Apartment> = ref({} as Apartment);
 let loaded = ref(false);
+
+interface JQuery {
+  modal(action: 'hide' | 'show' | 'toggle'): void;
+}
 
 // Получение параметров запроса из текущего URL
 const queryString = window.location.search;
@@ -18,17 +26,24 @@ const urlParams = new URLSearchParams(queryString);
 
 const api = import.meta.env.VITE_API_URL;
 
-let startDate = new Date(urlParams.get('start'));
-let endDate = new Date(urlParams.get('end'));
+// Parse start and end dates
+let startDate = new Date(urlParams.get('start') || ''); // Provide a default value if null
 
-let daysDifference: Ref<number> = ref(Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)));
+let endDate: Date | null = null;
+const endParam = urlParams.get('end');
+if (endParam) {
+  endDate = new Date(endParam);
+}
 
-let check: Ref<string> = ref('early');
+// Calculate days difference if endDate is not null
+let daysDifference: Ref<number> = ref(endDate ? Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) : 0);
+
+let check = ref('early');
 
 // Residents
-let adt: Ref<Number> = ref(Number(urlParams.get('adt')));
-let chd: Ref<Number> = ref(Number(urlParams.get('chd')));
-let bb: Ref<Number> = ref(Number(urlParams.get('bb')));
+let adt = ref(Number(urlParams.get('adt')));
+let chd = ref(Number(urlParams.get('chd')));
+let bb = ref(Number(urlParams.get('bb')));
 
 let early_check_in: Ref<Boolean> = ref(false);
 let late_check_out: Ref<Boolean> = ref(false);
@@ -36,10 +51,10 @@ let late_check_out: Ref<Boolean> = ref(false);
 let policy: Ref<Boolean> = ref(false);
 let receiveOffers: Ref<Boolean> = ref(false);
 
-let firstName: Ref<String> = ref('');
-let lastName: Ref<String> = ref('');
-let phone: Ref<String> = ref('');
-let email: Ref<String> = ref('');
+let firstName = ref('');
+let lastName = ref('');
+let phone = ref('');
+let email = ref('');
 
 let formLoaded = ref(false);
 
@@ -70,11 +85,11 @@ onMounted(function () {
 });
 
 function toPay() {
-  $('#payModal').modal('show');
+  // (jQuery('#payModal') as any).modal('show');
 }
 
 function initPay() {
-  $('#payModal').modal('hide');
+  // (jQuery('#payModal') as any).modal('hide');
 
   // Router push to pay-success with get params
   router.push({
@@ -188,7 +203,8 @@ function initPay() {
                               </div>
                             </div>
                             <div class="col-lg-3 mt-3">
-                              <button class="btn btn-primary w-100 fs-6 fw-lighter" :disabled="!policy">To pay</button>
+                              <button class="btn btn-primary w-100 fs-6 fw-lighter"
+                                onclick="jQuery('#payModal').modal('show')" :disabled="!policy">To pay</button>
                             </div>
                           </div>
                         </div>
@@ -272,7 +288,6 @@ function initPay() {
           <div class="modal-body">
             <template v-if="!loaded">
               <div class="progress-container">
-                <LoadBar />
               </div>
             </template>
             <template v-else>
@@ -318,7 +333,8 @@ function initPay() {
                 </div>
               </div>
 
-              <button type="button" class="btn btn-primary rounded-1 w-100 mt-4" @click="initPay">Pay for
+              <button type="button" class="btn btn-primary rounded-1 w-100 mt-4" @click="initPay"
+                onclick="jQuery('#payModal').modal('hide')">Pay for
                 reservation</button>
               <div class="text-center mt-3">
                 <a href="javascript:void(0);" style="color: #f48a5d;border-bottom: 1px dashed;"

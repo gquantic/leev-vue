@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import type { Ref } from 'vue'
+import type { Apartment } from '@/interfaces/Apartment'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import Header from "@/components/Header/Header.vue";
@@ -19,7 +21,7 @@ import BookNow from "@/components/BookNow.vue";
 const API_URL = import.meta.env.VITE_API_URL
 
 const route = useRoute()
-const apartment = ref([])
+const apartment: Ref<Apartment | null> = ref(null);
 
 let loaded = false;
 
@@ -42,36 +44,27 @@ onMounted(async () => {
   <Header />
   <HeaderMobile />
 
-  <div class="apartment">
+  <div class="apartment" v-if="apartment && Object.values(apartment).length > 0">
     <section class="apartment-big-slider position-relative" style="margin-top: 80px;position: relative;">
       <div id="apartmentBigSlider">
-<!--        <Carousel :items-to-show="1.5"-->
-<!--                  style="height: 600px;"-->
-<!--                  :wrap-around="true"-->
-<!--                  :touch-drag="false"-->
-<!--                  class="z-3"-->
-<!--                  v-if="loaded && apartment && apartment.photos && Object.values(apartment.photos).length > 0"-->
-<!--                  id="">-->
+        <!--        <Carousel :items-to-show="1.5"-->
+        <!--                  style="height: 600px;"-->
+        <!--                  :wrap-around="true"-->
+        <!--                  :touch-drag="false"-->
+        <!--                  class="z-3"-->
+        <!--                  v-if="loaded && apartment && apartment.photos && Object.values(apartment.photos).length > 0"-->
+        <!--                  id="">-->
 
-<!--          <Slide v-for="slide in apartment.photos"  :key="slide" style="padding: 0 5px;">-->
-<!--            <div class="picture" :style="'background: url(\'' + slide  + '\');height:600px;background-position:center center;width:100%;border-radius:8px;'"></div>-->
-<!--          </Slide>-->
+        <!--          <Slide v-for="slide in apartment.photos"  :key="slide" style="padding: 0 5px;">-->
+        <!--            <div class="picture" :style="'background: url(\'' + slide  + '\');height:600px;background-position:center center;width:100%;border-radius:8px;'"></div>-->
+        <!--          </Slide>-->
 
-<!--        </Carousel>-->
+        <!--        </Carousel>-->
 
-        <swiper
-            v-if="loaded && apartment && apartment.photos && Object.values(apartment.photos).length > 0"
-            :slides-per-view="2.2"
-            :centered-slides='true'
-            :space-between='20'
-            :loop="true"
-
-        >
-          <swiper-slide
-              :index="index"
-              :data-swiper-autoplay='3000'
-              v-for="(photo, index) in apartment?.photos"
-          >
+        <swiper v-if="loaded && apartment && apartment.photos && Object.values(apartment.photos).length > 0"
+          :slides-per-view="2.2" :centered-slides='true' :space-between='20' :loop="true">
+          <swiper-slide :index="index" :data-swiper-autoplay='3000' v-for="(photo, index) in apartment?.photos"
+            :key="index">
             <picture>
               <img class="slide-img" :src="photo" alt="" />
             </picture>
@@ -86,12 +79,12 @@ onMounted(async () => {
     <Characteristic :item="apartment" />
 
     <div class="apartment-min-slider">
-      <Images3d :images="apartment?.photos" />
+      <Images3d :images="Object.values(apartment?.photos)" />
     </div>
 
     <ApartmentAdvantages :advantages="apartment?.advantages" />
 
-    <section class="description description-big" v-if="apartment.description?.length > 0">
+    <section class="description description-big" v-if="apartment && apartment.description?.length > 0">
       <div class="descr-text">
         <p class="text" style="height: 100px; overflow: hidden;">
 
@@ -102,7 +95,7 @@ onMounted(async () => {
       </div>
     </section>
 
-    <ApartmentMaybeNeed :services="apartment.services" />
+    <ApartmentMaybeNeed :services="apartment?.services" />
 
     <AboutApartment />
 
@@ -110,7 +103,7 @@ onMounted(async () => {
 
     <OtherApartments />
 
-    <BookNow :apartment="apartment" v-if="Object.values(apartment).length > 0" />
+    <BookNow :apartment="apartment" v-if="apartment && Object.values(apartment).length > 0" />
   </div>
 </template>
 

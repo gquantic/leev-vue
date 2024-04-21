@@ -3,18 +3,18 @@ import { ref, onMounted, defineProps } from 'vue'
 import 'vue3-carousel/dist/carousel.css'
 import { Carousel, Slide } from 'vue3-carousel'
 
-// Определение пропса items
-const props = defineProps({
-  items: {
-    type: Object,
-    required: true
-  }
-})
+import type { Ref } from 'vue'
+import type { Apartment } from '@/interfaces/Apartment'
 
-// Создаем реактивную ссылку для items
-const items = ref([])
+// Define props with correct type for 'items'
+const props = defineProps<{
+  items: Apartment[];
+}>()
 
-// Внутри onMounted получаем данные из props и присваиваем их переменной items
+// Create a reactive reference for 'items'
+const items = ref<Apartment[]>([])
+
+// Inside onMounted, get data from props and assign it to the 'items' variable
 onMounted(() => {
   items.value = props.items
   console.log('Items:', items.value)
@@ -23,7 +23,7 @@ onMounted(() => {
 
 <template>
   <carousel :items-to-show="3" :wrap-around="true" :touch-drag="false" class="z-3">
-    <slide v-for="slide in items" :key="slide" style="padding: 0 5px">
+    <slide v-for="slide in items" :key="slide.id" style="padding: 0 5px">
       <div class="list-apartments__item d-block position-relative">
         <picture>
           <source :srcset="slide.cover" type="image/webp" />
@@ -45,15 +45,13 @@ onMounted(() => {
             </div>
             <div class="price price-mobile">
               <p class="text-price">
-                from <span class="text-price-bold">{{ slide.price }}</span
-                >/night
+                from <span class="text-price-bold">{{ slide.price }}</span>/night
               </p>
             </div>
           </div>
           <div class="price price-desktop">
             <p class="text-price">
-              from <span class="text-price-bold">{{ slide.price }}</span
-              >/night
+              from <span class="text-price-bold">{{ slide.price }}</span>/night
             </p>
           </div>
         </RouterLink>

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import {onMounted, ref} from 'vue'
+import { onMounted, ref } from 'vue'
 import Footer from '@/components/Footer.vue'
 
 let loaded = ref(false);
 
-// Слова для анимации загрузки
+// Words for loading animation
 const words = ["LEEV", "LOVE", "LIVE"];
 let currentIndex = 0;
 
-// Функция для изменения текста загрузки
+// Function to change loading text
 function changeWord() {
   let element = document.getElementById("loader");
 
@@ -19,16 +19,19 @@ function changeWord() {
   }
 }
 
-// Изменяем текст загрузки каждую секунду
+// Change loading text every 800 milliseconds
 setInterval(changeWord, 800);
 
-// Убираем после полной загрузки
-document.addEventListener('DOMContentLoaded', function() {
+// Remove loader after full loading
+onMounted(() => {
   setTimeout(() => {
     loaded.value = true;
-    document.getElementById('loader').remove();
+    const loaderElement = document.getElementById('loader');
+    if (loaderElement !== null) {
+      loaderElement.remove();
+    }
   }, 2000)
-}, false);
+});
 </script>
 
 <template>
