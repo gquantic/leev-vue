@@ -16974,7 +16974,7 @@ body {
   position: relative;
   width: 100%;
   height: 100vh;
-  background-image: url(public/img/home-img.webp);
+  background-image: url(/public/img/home-img.webp);
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center;
