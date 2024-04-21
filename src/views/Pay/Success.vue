@@ -179,7 +179,7 @@ onMounted(function () {
                                                 <h2>{{ apartment?.name.En }}</h2>
                                                 <p>{{ apartment?.address }}</p>
                                             </div>
-                                            <div class="col-lg-4"
+                                            <!-- <div class="col-lg-4"
                                                 v-if="apartment && loaded && Object.keys(apartment).length > 0">
                                                 <div class="card border-0 overflow-hidden">
                                                     <div class="card-body p-0 checkout-preview">
@@ -190,7 +190,7 @@ onMounted(function () {
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </div> -->
                                             <div class="row mt-4 p-4 pt-2">
                                                 <p class="fs-5 mb-2">Have questions?</p>
                                                 <div class="d-flex">
